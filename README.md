@@ -1,168 +1,44 @@
-<div align="center">
+# 🛡️ AI SOC Detection Engine
+> Continuous Threat Monitoring & Automated Alert Triage for Enterprise LLMs
 
-&#x20; <h1>🛡️ AI SOC Detection Engine</h1>
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=flat-square&logo=python&logoColor=white)
+![Build](https://img.shields.io/badge/CI%2FCD-Passing-2ea44f?style=flat-square&logo=githubactions&logoColor=white)
+![Security](https://img.shields.io/badge/SAST-Bandit%20Verified-blueviolet?style=flat-square)
+![License](https://img.shields.io/badge/License-MIT-informational?style=flat-square)
 
-&#x20; <p><i>Continuous Threat Monitoring \& Automated Alert Triage for Enterprise LLMs</i></p>
+---
 
+## 📖 Executive Summary
 
+* **The Problem:** As enterprise AI adoption accelerates, traditional security monitoring stacks fail to detect semantic-layer attacks such as prompt injection, agent tool misuse, and confidential data leakage.
+* **The Solution:** The **AI SOC Detection Engine** provides an automated telemetry analysis pipeline designed to intercept, parse, and evaluate AI activity against customizable DevSecOps rules before incidents impact production systems.
 
-&#x20; !\[Python](https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge\&logo=python)
+---
 
-&#x20; !\[CI/CD](https://img.shields.io/badge/Pipeline-Passing-brightgreen?style=for-the-badge\&logo=githubactions)
-
-&#x20; !\[License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
-
-</div>
-
-
-
-\---
-
-
-
-\## 📖 Executive Summary
-
-
-
-\*\*The Challenge:\*\* As enterprise AI adoption accelerates, traditional security tools struggle to parse the nuances of prompt injections, agentic tool hijacking, and Shadow AI.  
-
-\*\*The Solution:\*\* The \*\*AI SOC Detection Engine\*\* is a high-fidelity detection pipeline engineered to close this gap. It provides continuous monitoring, automated alert generation, and strict policy enforcement for AI application telemetry.
-
-
-
-\### 🎯 Core Capabilities
-
-\* \*\*Proactive Threat Hunting:\*\* Identifies complex jailbreaks and malicious prompt injections before they reach the model.
-
-\* \*\*Data Loss Prevention (DLP):\*\* Intercepts Shadow AI data leaks (e.g., API keys, PII) to maintain strict data compliance.
-
-\* \*\*Automated Triage Routing:\*\* Built with an extensible alerting framework designed for seamless integration with enterprise ticketing systems and SIEM dashboards.
-
-
-
-\---
-
-
-
-\## 🏗️ System Architecture
-
-
+## 🏗️ System Architecture
 
 ```mermaid
-
 graph TD
+    subgraph Telemetry Sources
+        A[User Prompts] --> E
+        B[Agent Tool Calls] --> E
+        C[RAG Document Retrievals] --> E
+    end
 
-&#x20;   subgraph Enterprise Telemetry
-
-&#x20;       A\[User Prompts] --> E
-
-&#x20;       B\[Agent Tool Calls] --> E
-
-&#x20;       C\[RAG Document Retrievals] --> E
-
-&#x20;   end
-
-
-
-&#x20;   E\[JSON Log Simulator] -->|Outputs Structured Telemetry| F(Python Detection Engine)
-
-&#x20;   
-
-&#x20;   subgraph Detection \& Response Workflow
-
-&#x20;       F -->|Evaluates against| G\[DevSecOps Rule Engine]
-
-&#x20;       G -->|Match Found| H\[Security Alert Generated]
-
-&#x20;       H --> I\[SOC Incident Playbook]
-
-&#x20;   end
-
-⚙️ Prerequisites \& Environment Setup
-
-Python 3.11+ must be installed.
-
-
-
-Clone this repository to your local machine.
-
-
-
-Configure your environment variables securely:
-
-
-
-Bash
-
-cp .env.example .env
-
-Edit the .env file to configure your desired log levels and alert webhook channels.
-
-
-
-🚀 Installation \& Deployment
-
-Set up a virtual environment and install the required dependencies to ensure clean execution:
-
-
-
-Bash
-
-python -m venv venv
-
-source venv/bin/activate  # On Windows use: venv\\Scripts\\activate
-
+    E[JSON Telemetry Feed] -->|Structured Ingestion| F(Python Detection Engine)
+    
+    subgraph Detection & Response
+        F -->|Rule Evaluation| G[DevSecOps Rule Engine]
+        G -->|Match Found| H[Security Alert Dispatched]
+        H --> I[SOC Incident Playbook]
+    end
+🎯 Key Detection ModulesRule ModuleTarget Attack VectorFramework MappingPrompt InjectionJailbreak patterns, instruction override, base64 evasionOWASP LLM01Shadow AI DLPPlaintext API keys, credentials, PII leakageOWASP LLM02 / LLM06Telemetry ParserMalformed payloads, unauthorized event schemasDefensive Logging⚙️ Environment Setup1. PrerequisitesPython 3.11 or higherGit2. Configure Environment VariablesBashcp .env.example .env
+3. InstallationBashpython -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-
-💻 Usage \& Triage Examples
-
-1\. Generate Telemetry
-
-Simulate a batch of AI logs (saved to data/sample\_telemetry.json):
-
-
-
-Bash
-
-python src/telemetry\_simulator.py
-
-2\. Run the Detection Engine
-
-Execute the core engine to parse logs and trigger security rules:
-
-
-
-Bash
-
-python src/detection\_engine.py
-
-Example SOC Alert Output:
-
-
-
-Plaintext
-
+💻 Usage & VerificationStep 1: Ingest TelemetryGenerate sample AI logs into data/sample_telemetry.json:Bashpython src/telemetry_simulator.py
+Step 2: Execute Detection EngineRun the engine to process events and trigger security alerts:Bashpython src/detection_engine.py
+Example Terminal Output:Plaintext2026-08-26 14:35:01 - INFO - Loaded 3 events for security scanning.
 2026-08-26 14:35:01 - WARNING - SECURITY ALERT TRIGGERED:
-
-{'alert\_id': 'ALRT-evt\_1111', 'rule\_triggered': 'Prompt Injection / Jailbreak Attempt', 'reason': 'Matched malicious pattern: (?i)ignore\\\\s+all\\\\s+previous\\\\s+instructions'}
-
-🔒 Security \& Engineering Principles
-
-Least Privilege: The detection engine requires strictly read-only access to log files.
-
-
-
-Zero Hardcoded Secrets: All configurations and integrations are managed via .env injection.
-
-
-
-Defensive Architecture: Robust error handling prevents malformed JSON logs from disrupting the continuous monitoring pipeline.
-
-
-
-CI/CD Security: Automated GitHub Actions run bandit (SAST) and pytest on every pull request to enforce code integrity.
-
-
-
-Architected for robust AI Security Operations and Continuous Threat Detection.
-
+{'alert_id': 'ALRT-evt_1111', 'rule_triggered': 'Prompt Injection / Jailbreak Attempt', 'reason': 'Matched malicious pattern: (?i)ignore\\s+all\\s+previous\\s+instructions'}
+🔒 Security & Quality AssuranceZero Hardcoded Secrets: Dynamic runtime configuration via environment variables.Static Application Security Testing (SAST): Automated vulnerability scans via bandit in CI/CD.Test Coverage: Modular test suites implemented with pytest for all signature evaluations.Defensive Exception Handling: Prevents log ingestion crashes during malformed payload parsing.📄 LicenseDistributed under the MIT License. See LICENSE for more information.
