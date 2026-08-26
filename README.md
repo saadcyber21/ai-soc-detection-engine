@@ -117,9 +117,3 @@ python src/detection_engine.py
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ```
-
-
-
-Let me know when it looks right on your end!
-
-```
