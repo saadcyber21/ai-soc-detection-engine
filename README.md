@@ -1,12 +1,3 @@
-Ah, I see exactly what happened! When you copied it over, your clipboard or text editor stripped out the line breaks, table borders, and code block formatting. That is why everything from "Key Detection Modules" down turned into one giant, unreadable paragraph.
-
-Markdown relies heavily on those invisible line breaks and specific characters (like `|` for tables and ``` for code) to format correctly on GitHub.
-
-Let's try this one more time. **Do not copy this response as normal text.** Instead, look for the **"Copy code"** button in the top right corner of the block below and click that. This ensures you grab the raw, unformatted syntax.
-
-Then, paste it directly into your `README.md` file, save, and push.
-
-```markdown
 # 🛡️ AI SOC Detection Engine
 > Continuous Threat Monitoring & Automated Alert Triage for Enterprise LLMs
 
