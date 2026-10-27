@@ -1,0 +1,18 @@
+runtime:
+  backend: auto            # ollama | vllm | hf | heuristic
+  model: qwen2.5:3b
+  temperature: 0.1
+brain:
+  max_react_steps: 8
+  query_window_minutes: 1440
+  neighbour_window_minutes: 60
+explainability:
+  output_dir: docs/xai_reports
+  emit_mermaid_timeline: true
+evaluation:
+  scenarios: data/golden/scenarios.json
+  thresholds:
+    hallucination_rate_max: 0.30
+    precision_min: 0.60
+    recall_min: 0.60
+    p95_latency_ms_max: 15000
