@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-10-27T15:33:11.578695+00:00",
+  "run_at": "2026-10-27T15:33:32.928001+00:00",
   "backend": "heuristic",
   "model": "qwen2.5:3b",
   "n_scenarios": 5,
@@ -19,8 +19,8 @@
   },
   "hallucination_rate": 0.0,
   "latency_ms": {
-    "p50": 0.7,
-    "p95": 0.8,
+    "p50": 0.6,
+    "p95": 0.7,
     "mean_turn": 0.1
   },
   "brier_calibration_score": 0.0939,
