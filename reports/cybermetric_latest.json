@@ -1,0 +1,32 @@
+{
+  "run_at": "2026-10-27T15:33:32.928001+00:00",
+  "backend": "heuristic",
+  "model": "qwen2.5:3b",
+  "n_scenarios": 5,
+  "confusion": {
+    "tp": 3,
+    "fp": 0,
+    "fn": 0,
+    "tn": 2
+  },
+  "precision": 1.0,
+  "recall": 1.0,
+  "f1": 1.0,
+  "zero_day": {
+    "precision": 1.0,
+    "recall": 1.0,
+    "support": 1
+  },
+  "hallucination_rate": 0.0,
+  "latency_ms": {
+    "p50": 0.6,
+    "p95": 0.7,
+    "mean_turn": 0.1
+  },
+  "brier_calibration_score": 0.0939,
+  "failures": [],
+  "suggestions": [
+    "No regressions detected. Freeze this prompt/config hash."
+  ],
+  "gate_passed": true
+}

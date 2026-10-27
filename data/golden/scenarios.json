@@ -1,0 +1,63 @@
+{
+  "description": "LogAgent-SOC CyberMetric golden scenario corpus. Labels are ground truth; zero_day=true marks novel TTPs with no regex-signature equivalent.",
+  "scenarios": [
+    {
+      "id": "SC-001-lateral-ssh-brute",
+      "label_malicious": true,
+      "zero_day": false,
+      "alert_index": 4,
+      "raw_lines": [
+        "2026-10-21T08:11:02Z web-01 sshd[4412]: Failed password for invalid user admin from 203.0.113.9 port 52114 ssh2",
+        "2026-10-21T08:11:05Z web-01 sshd[4413]: Failed password for invalid user root from 203.0.113.9 port 52120 ssh2",
+        "2026-10-21T08:11:09Z web-01 sshd[4419]: Failed password for invalid user oracle from 203.0.113.9 port 52133 ssh2",
+        "2026-10-21T08:14:41Z web-01 sshd[4501]: Accepted password for user jsmith from 203.0.113.9 port 53001 ssh2",
+        "2026-10-21T08:15:03Z db-01 sshd[881]: session opened for user jsmith by (uid=0) from 10.0.4.12 host=db-01.internal",
+        "2026-10-21T08:17:22Z db-01 sudo: jsmith : TTY=pts/0 ; COMMAND=/bin/cat /etc/shadow"
+      ]
+    },
+    {
+      "id": "SC-002-k8s-exfil-zero-day",
+      "label_malicious": true,
+      "zero_day": true,
+      "alert_index": 3,
+      "raw_lines": [
+        "2026-10-22T02:03:11Z k8s-audit verb=CREATE user=system:serviceaccount:ns-app:deployer requestURI=/apis/batch/v1/namespaces/ns-app/jobs",
+        "2026-10-22T02:05:40Z k8s-audit verb=GET user=system:serviceaccount:ns-app:deployer requestURI=/api/v1/namespaces/kube-system/secrets/admin-token responseStatus=200",
+        "2026-10-22T02:06:12Z node-7 kubelet: pod created uid=a91f... nsenter --mount=/proc/1/ns/mnt -- /bin/bash inside container sha256:4f8a1c3b9d2e77aa00bb11cc22dd33ee44ff55aa66778899aabbccddeeff0011",
+        "2026-10-22T02:09:55Z edge-fw flow src=10.244.3.7 dst=185.220.101.4 bytes_sent=842000000 proto=tcp duration=41s"
+      ]
+    },
+    {
+      "id": "SC-003-benign-backup-job",
+      "label_malicious": false,
+      "zero_day": false,
+      "alert_index": 1,
+      "raw_lines": [
+        "2026-10-23T03:00:01Z fs-01 CRON[2211]: (root) CMD (/usr/local/bin/nightly_backup.sh)",
+        "2026-10-23T03:00:04Z fs-01 backup-agent: success destination=bkbucket-01 host=fs-01.corp user=svc_backup bytes=120000000"
+      ]
+    },
+    {
+      "id": "SC-004-windows-rdp-spray",
+      "label_malicious": true,
+      "zero_day": false,
+      "alert_index": 3,
+      "raw_lines": [
+        "2026-10-24T14:02:00Z WIN-DC01 EventID=4625 account=jdoe src=192.168.1.77 status=failed",
+        "2026-10-24T14:02:03Z WIN-FILE02 EventID=4625 account=jdoe src=192.168.1.77 status=failed",
+        "2026-10-24T14:02:07Z WIN-DB03 EventID=4624 account=jdoe src=192.168.1.77 status=success logon_type=3",
+        "2026-10-24T14:05:31Z WIN-DB03 TerminalServices RDP src=192.168.1.77 dst=WIN-DB03 account=jdoe session established"
+      ]
+    },
+    {
+      "id": "SC-005-benign-admin-ssh",
+      "label_malicious": false,
+      "zero_day": false,
+      "alert_index": 1,
+      "raw_lines": [
+        "2026-10-25T09:00:00Z bastion-01 sshd[900]: Accepted publickey for alice from 10.8.0.5 port 40022 ssh2",
+        "2026-10-25T09:00:10Z app-02 sshd[120]: session opened for user alice by (uid=1000) from bastion-01.internal host=app-02.internal"
+      ]
+    }
+  ]
+}
