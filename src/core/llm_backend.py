@@ -14,6 +14,9 @@ Backends (auto-selected):
 The heuristic backend is NOT a stub: it implements the same JSON
 contract as the real models, which lets us run CyberMetric-style
 evaluations reproducibly and diff LLM vs. SLM behaviour.
+
+Supply-chain note: the weight-downloading backends (hf, vllm) refuse to
+resolve a model without a pinned commit revision. See ``_require_pin``.
 """
 from __future__ import annotations
 
@@ -30,12 +33,19 @@ logger = logging.getLogger("logagent.llm")
 class LocalLLMBackend:
     """Uniform ``complete_json`` interface over any local model runtime."""
 
-    def __init__(self, model_id: Optional[str] = None, backend: Optional[str] = None):
+    def __init__(self, model_id: Optional[str] = None, backend: Optional[str] = None,
+                 model_revision: Optional[str] = None):
         self.model_id = model_id or os.getenv("LOGAGENT_MODEL", "qwen2.5:3b")
         self.backend = backend or os.getenv("LOGAGENT_LLM_BACKEND", "auto")
+        #: Commit hash the model weights must resolve to. ``None`` means unpinned,
+        #: which ``_require_pin`` refuses for weight-downloading backends.
+        self.model_revision = model_revision or os.getenv("LOGAGENT_MODEL_REVISION") or None
+        #: Deliberate, logged opt-out. Off by default.
+        self.allow_unpinned = os.getenv("LOGAGENT_ALLOW_UNPINNED_MODEL", "").lower() in ("1", "true", "yes")
         if self.backend == "auto":
             self.backend = self._detect_backend()
-        logger.info("LLM backend=%s model=%s", self.backend, self.model_id)
+        logger.info("LLM backend=%s model=%s revision=%s",
+                    self.backend, self.model_id, self.model_revision or "UNPINNED")
 
     # ------------------------------------------------------------------ #
     def _detect_backend(self) -> str:
@@ -51,7 +61,16 @@ class LocalLLMBackend:
             pass
         try:
             import transformers  # noqa: F401
-            return "hf"
+            # Only select the HF path if a pin exists. Otherwise fall through to
+            # the deterministic backend rather than failing at import time: an
+            # unpinned download should be refused when it would happen, not
+            # merely because transformers happens to be installed.
+            if self.model_revision or self.allow_unpinned:
+                return "hf"
+            logger.warning(
+                "transformers is installed but no model revision is pinned; "
+                "falling back to the heuristic backend. Set "
+                "LOGAGENT_MODEL_REVISION to enable real inference.")
         except ImportError:
             pass
         return "heuristic"
@@ -97,18 +116,49 @@ class LocalLLMBackend:
 
     def _vllm(self, prompt: str, temperature: float, max_tokens: int) -> str:
         from vllm import LLM, SamplingParams
-        llm = LLM(model=self.model_id)
+        revision = self._require_pin("vllm")
+        llm = LLM(model=self.model_id,
+                  **({"revision": revision} if revision else {}))
         out = llm.generate([prompt],
                            SamplingParams(temperature=temperature,
                                           max_tokens=max_tokens))
         return out[0].outputs[0].text
 
+    def _require_pin(self, runtime: str) -> Optional[str]:
+        """Return the revision to download, or raise.
+
+        Weight-downloading backends must resolve to a specific commit. Without a
+        pin, ``from_pretrained`` follows a moving branch head, so the artefacts
+        this pipeline treats as evidence are not reproducible and a compromised
+        upstream repository is loaded silently — CWE-494, and Bandit B615.
+
+        For a forensic tool whose entire premise is "fully auditable", that is
+        not a lint warning to suppress. It fails closed instead, with an explicit
+        and logged opt-out for anyone who genuinely wants the old behaviour.
+        """
+        if self.model_revision:
+            return self.model_revision
+        if self.allow_unpinned:
+            logger.warning(
+                "%s: loading '%s' WITHOUT a revision pin. Model weights are not "
+                "reproducible or auditable in this configuration.",
+                runtime, self.model_id)
+            return None
+        raise RuntimeError(
+            f"{runtime} backend refuses to download '{self.model_id}' without a "
+            "pinned revision. Set LOGAGENT_MODEL_REVISION to the exact commit "
+            "hash you have verified (see configs/settings.yaml), or set "
+            "LOGAGENT_ALLOW_UNPINNED_MODEL=1 to opt out explicitly and accept "
+            "an unauditable model supply chain.")
+
     def _hf(self, prompt: str, temperature: float, max_tokens: int) -> str:
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
-        tok = AutoTokenizer.from_pretrained(self.model_id)
+        revision = self._require_pin("hf")
+        tok = AutoTokenizer.from_pretrained(self.model_id, revision=revision)
         model = AutoModelForCausalLM.from_pretrained(
-            self.model_id, torch_dtype=torch.float16, device_map="auto")
+            self.model_id, revision=revision,
+            torch_dtype=torch.float16, device_map="auto")
         inputs = tok(prompt, return_tensors="pt").to(model.device)
         gen = model.generate(**inputs, max_new_tokens=max_tokens,
                              do_sample=temperature > 0,
