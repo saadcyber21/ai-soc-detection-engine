@@ -16,3 +16,16 @@ evaluation:
     precision_min: 0.60
     recall_min: 0.60
     p95_latency_ms_max: 15000
+
+# --- model supply chain -------------------------------------------------
+# Weight-downloading backends (hf, vllm) refuse to run without a pinned
+# revision. Set this to the exact commit hash you have verified; a branch name
+# is not a pin, because the head moves.
+#
+# Find a model's commit hash with:
+#   huggingface-cli scan-cache        # for models already downloaded
+#   or the "Commit history" link on the model's Hub page
+#
+model_supply_chain:
+  revision: null              # e.g. "0e3c3b9a6c1cbad4a1a1a9f4e6d1c2b3a4f5e6d7"
+  allow_unpinned: false       # opting out is deliberate and logged
